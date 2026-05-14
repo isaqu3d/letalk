@@ -10,8 +10,12 @@
   },
   "packageManager": "pnpm@10.30.3",
   "scripts": {
-    "lint": "echo \"lint não configurado ainda\" && exit 0",
-    "test": "echo \"test não configurado ainda\" && exit 0",
-    "build": "echo \"build não configurado ainda\" && exit 0"
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "build": "turbo run build",
+    "dev": "turbo run dev"
+  },
+  "devDependencies": {
+    "turbo": "^2.5.0"
   }
 }
