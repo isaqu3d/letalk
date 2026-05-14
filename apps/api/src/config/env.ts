@@ -22,6 +22,7 @@ const envSchema = z
     PORT: z.coerce.number().int().positive().default(DEFAULT_PORT),
     LOG_LEVEL: z.enum(LOG_LEVELS).optional(),
     CORS_ORIGIN: z.string().url().default(DEFAULT_CORS_ORIGIN),
+    DATABASE_URL: z.string().min(1, "DATABASE_URL é obrigatório"),
   })
   .transform((parsed) => ({
     ...parsed,
