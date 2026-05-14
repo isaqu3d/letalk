@@ -1,0 +1,47 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model CompanySnapshot {
+  id              String    @id @default(cuid())
+  cnpj            String    @unique
+  rawData         Json
+  razaoSocial     String
+  nomeFantasia    String?
+  cnaePrincipal   String?
+  cnaeDescription String?
+  capitalSocial   Float?
+  porte           String?
+  situacao        String?
+  dataAbertura    DateTime?
+  fetchedAt       DateTime  @default(now())
+
+  leads Lead[]
+
+  @@map("company_snapshots")
+}
+
+model Lead {
+  id            String   @id @default(cuid())
+  name          String
+  email         String
+  phone         String
+  cnpj          String
+  contactRole   String?
+  segment       String
+  employeeRange String
+  createdAt     DateTime @default(now())
+
+  snapshotId String?
+  snapshot   CompanySnapshot? @relation(fields: [snapshotId], references: [id])
+
+  @@unique([email, cnpj])
+  @@index([cnpj])
+  @@index([createdAt])
+  @@map("leads")
+}
