@@ -2,11 +2,11 @@ import type { FastifyError } from "fastify";
 import fp from "fastify-plugin";
 import { ZodError } from "zod";
 import { DomainError } from "../errors/base.error";
-
-const INTERNAL_SERVER_ERROR = 500;
-const BAD_REQUEST = 400;
-const CLIENT_ERROR_MIN = 400;
-const CLIENT_ERROR_MAX = 499;
+import {
+  CLIENT_ERROR_MAX,
+  CLIENT_ERROR_MIN,
+  HttpStatus,
+} from "../shared/http-status";
 
 function formatZodIssues(zodError: ZodError): Array<{ path: string; message: string }> {
   return zodError.issues.map((issue) => ({
@@ -40,7 +40,7 @@ export const errorHandlerPlugin = fp(async (app) => {
     if (error instanceof ZodError) {
       const issues = formatZodIssues(error);
       request.log.warn({ code: "VALIDATION_ERROR", issues }, "Validação falhou");
-      reply.status(BAD_REQUEST).send({
+      reply.status(HttpStatus.BAD_REQUEST).send({
         code: "VALIDATION_ERROR",
         message: "Dados inválidos",
         issues,
@@ -53,15 +53,15 @@ export const errorHandlerPlugin = fp(async (app) => {
         { code: error.code, statusCode: error.statusCode },
         error.message,
       );
-      reply.status(error.statusCode ?? BAD_REQUEST).send({
-        code: error.code ?? "BAD_REQUEST",
+      reply.status(error.statusCode ?? HttpStatus.BAD_REQUEST).send({
+        code: error.code ?? "HttpStatus.BAD_REQUEST",
         message: error.message,
       });
       return;
     }
 
     request.log.error({ err: error }, "Erro não tratado");
-    reply.status(INTERNAL_SERVER_ERROR).send({
+    reply.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
       code: "INTERNAL_ERROR",
       message: "Erro interno do servidor",
     });
