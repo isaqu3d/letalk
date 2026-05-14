@@ -17,6 +17,11 @@ export default defineConfig({
         "src/**/__tests__/**",
         "src/**/index.ts",
         "src/server.ts",
+        "src/config/**",
+        "src/infra/**",
+        "src/plugins/cors.ts",
+        "src/plugins/helmet.ts",
+        "src/plugins/rate-limit.ts",
       ],
       thresholds: {
         statements: 80,
