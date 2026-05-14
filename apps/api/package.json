@@ -1,0 +1,12 @@
+{
+  "name": "@letalk/api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "lint": "echo \"[api] lint placeholder\"",
+    "test": "echo \"[api] test placeholder\"",
+    "build": "echo \"[api] build placeholder\"",
+    "dev": "echo \"[api] dev placeholder\""
+  }
+}
