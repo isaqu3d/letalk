@@ -1,5 +1,6 @@
 import Fastify from "fastify";
 import { env } from "./config/env";
+import { prisma } from "./infra/db/prisma";
 import { buildLoggerOptions } from "./infra/logger/pino";
 import { healthRoutes } from "./modules/health/health.routes";
 import { corsPlugin } from "./plugins/cors";
@@ -29,6 +30,10 @@ export async function buildApp(options: BuildAppOptions = {}) {
   }
 
   await app.register(healthRoutes);
+
+  app.addHook("onClose", async () => {
+    await prisma.$disconnect();
+  });
 
   return app;
 }
