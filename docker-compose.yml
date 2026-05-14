@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: letalk-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: letalk
+      POSTGRES_PASSWORD: letalk
+      POSTGRES_DB: letalk
+    ports:
+      - "5432:5432"
+    volumes:
+      - letalk-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U letalk -d letalk"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  letalk-postgres-data:
