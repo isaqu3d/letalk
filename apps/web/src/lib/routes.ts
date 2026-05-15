@@ -8,4 +8,5 @@ export const ROUTE_PATTERNS = {
   home: "/",
   history: "/leads",
   detail: "/leads/:id",
+  notFound: "*",
 } as const;
