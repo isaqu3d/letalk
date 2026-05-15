@@ -69,6 +69,8 @@ describe("errorHandlerPlugin", () => {
     expect(response.json()).toEqual({
       code: "FAKE_NOT_FOUND",
       message: "Recurso lead não encontrado",
+      statusCode: 404,
+      issues: [],
     });
   });
 
@@ -94,6 +96,8 @@ describe("errorHandlerPlugin", () => {
     expect(response.json()).toEqual({
       code: "INTERNAL_ERROR",
       message: "Erro interno do servidor",
+      statusCode: 500,
+      issues: [],
     });
   });
 
@@ -107,6 +111,8 @@ describe("errorHandlerPlugin", () => {
     expect(response.json()).toEqual({
       code: "FST_ERR_RATE_LIMIT",
       message: "Limite excedido",
+      statusCode: 429,
+      issues: [],
     });
   });
 });
