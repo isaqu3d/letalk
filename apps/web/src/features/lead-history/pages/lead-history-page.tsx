@@ -5,7 +5,7 @@ import { useListLeads } from "../api/use-list-leads";
 import { LeadsTable } from "../components/leads-table";
 import { Pagination } from "../components/pagination";
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 5;
 
 export function LeadHistoryPage() {
   const [offset, setOffset] = useState(0);
@@ -51,7 +51,7 @@ export function LeadHistoryPage() {
 
       {query.data !== undefined && (
         <div className="space-y-6">
-          <LeadsTable leads={query.data.items} />
+          <LeadsTable leads={query.data.items} pageSize={PAGE_SIZE} />
           {query.data.total > PAGE_SIZE && (
             <Pagination
               total={query.data.total}
