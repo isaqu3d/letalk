@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { ROUTES } from "@/lib/routes";
 import { useListLeads } from "../api/use-list-leads";
 import { LeadsTable } from "../components/leads-table";
+import { LeadsTableSkeleton } from "../components/leads-table-skeleton";
 import { Pagination } from "../components/pagination";
 
 const PAGE_SIZE = 5;
@@ -33,9 +34,7 @@ export function LeadHistoryPage() {
         </Link>
       </header>
 
-      {query.isLoading && (
-        <p className="text-sm text-ink-soft">Carregando leads...</p>
-      )}
+      {query.isLoading && <LeadsTableSkeleton pageSize={PAGE_SIZE} />}
 
       {query.isError && (
         <div

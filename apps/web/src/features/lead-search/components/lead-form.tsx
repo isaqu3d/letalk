@@ -2,6 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { type CreateLeadInput, createLeadInputSchema } from "@letalk/shared";
 import type { ComponentPropsWithoutRef, ReactNode } from "react";
 import { useForm } from "react-hook-form";
+import { Spinner } from "@/components/spinner";
 
 interface LeadFormProps {
   onSubmit: (data: CreateLeadInput) => void;
@@ -132,8 +133,9 @@ export function LeadForm({ onSubmit, isPending }: LeadFormProps) {
         <button
           type="submit"
           disabled={isPending}
-          className="rounded-full bg-brand-600 px-7 py-2.5 text-sm font-medium text-white shadow-sm shadow-brand-600/20 transition hover:bg-brand-700 focus:outline-none focus:ring-4 focus:ring-brand-200 disabled:cursor-not-allowed disabled:opacity-60"
+          className="inline-flex items-center gap-2 rounded-full bg-brand-600 px-7 py-2.5 text-sm font-medium text-white shadow-sm shadow-brand-600/20 transition hover:bg-brand-700 focus:outline-none focus:ring-4 focus:ring-brand-200 disabled:cursor-not-allowed disabled:opacity-60"
         >
+          {isPending && <Spinner label="Buscando dados da empresa" />}
           {isPending ? "Buscando dados..." : "Salvar lead"}
         </button>
       </div>

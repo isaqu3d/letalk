@@ -12,6 +12,7 @@ import {
 import { ROUTES } from "@/lib/routes";
 import { segmentBadgeClass } from "@/lib/segment-badge";
 import { useLead } from "../api/use-lead";
+import { LeadDetailSkeleton } from "../components/lead-detail-skeleton";
 
 export function LeadDetailPage() {
   const { id = "" } = useParams<{ id: string }>();
@@ -29,9 +30,7 @@ export function LeadDetailPage() {
         </Link>
       </header>
 
-      {query.isLoading && (
-        <p className="text-sm text-ink-soft">Carregando lead...</p>
-      )}
+      {query.isLoading && <LeadDetailSkeleton />}
 
       {query.isError && (
         <div
