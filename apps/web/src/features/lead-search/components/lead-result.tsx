@@ -1,4 +1,6 @@
 import { formatCnpj } from "@letalk/shared";
+import { ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
 import { InfoRow } from "@/components/info-row";
 import {
   employeeRangeLabel,
@@ -6,6 +8,7 @@ import {
   formatDate,
   formatPhone,
 } from "@/lib/formatters";
+import { ROUTES } from "@/lib/routes";
 import { segmentBadgeClass } from "@/lib/segment-badge";
 import type { Lead } from "@/types/lead";
 
@@ -77,7 +80,7 @@ export function LeadResult({ lead, onReset }: LeadResultProps) {
         </dl>
       </article>
 
-      <div className="flex justify-end">
+      <div className="flex flex-wrap items-center justify-end gap-3">
         <button
           type="button"
           onClick={onReset}
@@ -85,6 +88,13 @@ export function LeadResult({ lead, onReset }: LeadResultProps) {
         >
           Cadastrar outro lead
         </button>
+        <Link
+          to={ROUTES.history}
+          className="inline-flex items-center gap-1.5 rounded-full bg-brand-600 px-6 py-2.5 text-sm font-medium text-white shadow-sm shadow-brand-600/20 transition hover:bg-brand-700"
+        >
+          Ver no histórico
+          <ArrowRight className="h-4 w-4" aria-hidden="true" />
+        </Link>
       </div>
     </section>
   );
