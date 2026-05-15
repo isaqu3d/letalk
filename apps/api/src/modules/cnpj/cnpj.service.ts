@@ -1,13 +1,11 @@
-import {
-  estimateEmployeeRange,
-  isValidCnpj,
-  normalizeCnpj,
-  segmentFromCnae,
-} from "@letalk/shared";
-import type { CompanySnapshot } from "@prisma/client";
+import { isValidCnpj, normalizeCnpj } from "@letalk/shared";
 import type { BrasilApiClient } from "../../infra/http/brasil-api.client";
 import { InvalidCnpjError } from "./cnpj.errors";
-import { type CompanyData, toCompanyData } from "./cnpj.mapper";
+import {
+  type CompanyData,
+  snapshotToCompanyData,
+  toCompanyData,
+} from "./cnpj.mapper";
 import type { CnpjRepository } from "./cnpj.repository";
 
 const HOUR_IN_MS = 60 * 60 * 1000;
@@ -72,23 +70,4 @@ export class CnpjService {
     const ageMs = Date.now() - fetchedAt.getTime();
     return ageMs < this.config.cacheTtlHours * HOUR_IN_MS;
   }
-}
-
-function snapshotToCompanyData(snapshot: CompanySnapshot): CompanyData {
-  return {
-    cnpj: snapshot.cnpj,
-    razaoSocial: snapshot.razaoSocial,
-    nomeFantasia: snapshot.nomeFantasia,
-    cnaePrincipal: snapshot.cnaePrincipal,
-    cnaeDescription: snapshot.cnaeDescription,
-    capitalSocial: snapshot.capitalSocial,
-    porte: snapshot.porte,
-    situacao: snapshot.situacao,
-    dataAbertura: snapshot.dataAbertura,
-    segment: segmentFromCnae(snapshot.cnaePrincipal),
-    employeeRange: estimateEmployeeRange({
-      porte: snapshot.porte,
-      capitalSocial: snapshot.capitalSocial,
-    }),
-  };
 }
