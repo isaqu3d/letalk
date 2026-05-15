@@ -9,6 +9,10 @@ import {
 import { HttpStatus } from "../../shared/http-status";
 
 const DEFAULT_TIMEOUT_MS = 10_000;
+const DEFAULT_HEADERS = {
+  "User-Agent": "letalk-cnpj-enricher/1.0",
+  Accept: "application/json",
+};
 
 export interface BrasilApiClient {
   fetchCnpj(cnpj: string): Promise<BrasilApiCnpjData>;
@@ -37,7 +41,10 @@ export class BrasilApiHttpClient implements BrasilApiClient {
     const timeoutId = setTimeout(() => controller.abort(), this.timeoutMs);
 
     try {
-      const response = await this.fetcher(url, { signal: controller.signal });
+      const response = await this.fetcher(url, {
+        signal: controller.signal,
+        headers: DEFAULT_HEADERS,
+      });
 
       if (response.status === HttpStatus.NOT_FOUND) {
         throw new CnpjNotFoundError(cnpj);
