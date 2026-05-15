@@ -21,6 +21,8 @@ Cadastro de leads com enriquecimento automático de dados públicos de empresa v
 
 Aplicação fullstack desenvolvida como **teste técnico para a Letalk**. O usuário cadastra um lead informando dados de contato (nome, e-mail, telefone, cargo opcional) e o CNPJ da empresa. A API consulta a **BrasilAPI**, classifica o lead automaticamente por **segmento de mercado** (16 categorias derivadas do CNAE) e **faixa estimada de funcionários** (porte + capital social), persiste tudo e devolve um snapshot completo da empresa pronto pra exibir no histórico.
 
+Interface **responsiva ponta-a-ponta** (mobile + desktop), com loading states (spinner + skeleton), tratamento de erros padronizado e identidade visual alinhada à marca Letalk.
+
 ---
 
 ## 🛠 Tecnologias
@@ -416,14 +418,24 @@ A BrasilAPI devolve `cnae_fiscal` como **número** (ex: `600001` em vez de `0600
 
 O `react-hook-form` envia `""` (string vazia) pra campos não preenchidos, mas `contactRoleSchema.optional()` só aceita `undefined`. Resolvido com `z.preprocess` que converte string vazia ou só-espaços em `undefined` — vale para front e back.
 
-### Tabela com altura estável + grid visual + cards no mobile
+### Responsividade ponta-a-ponta (mobile + desktop)
 
-Pra evitar "pulo" entre páginas (quando a última tem menos itens) e textos quebrando feio em telas estreitas:
+Tudo foi projetado mobile-first e testado nos dois extremos (375px / 1280px):
 
-- `<colgroup>` + `table-fixed` fixa as larguras das colunas (não recalculam por conteúdo)
+- **Header**: logo + subtítulo "Enriquecimento de leads" em desktop; só logo em telas `<sm` (640px) pra dar espaço pro nav.
+- **Formulário**: grid 2 colunas em `md`, 1 coluna em mobile (`grid-cols-1 md:grid-cols-2`).
+- **Histórico**: em `<md` a tabela é **substituída por uma lista de cards verticais clicáveis** (`md:hidden` + `hidden md:block`). Cada card mantém todas as infos (nome, email, badge de segmento, razão social, CNPJ, faixa, data) em hierarquia visual adequada ao toque.
+- **Detalhe**: grid `md:grid-cols-2 lg:grid-cols-3` que vira coluna única no mobile.
+- **CTAs**: pill buttons (`rounded-full`) com `flex-wrap` para empilhar quando faltar espaço.
+
+### Tabela desktop com altura estável + grid visual
+
+Pra evitar "pulo" entre páginas (quando a última tem menos itens) e colunas dançando conforme o conteúdo:
+
+- `<colgroup>` + `table-fixed` fixa as larguras das colunas (não recalculam entre páginas)
 - Empty rows preenchem até `pageSize` na última página (altura constante)
 - `line-clamp-1` + `title` nos textos longos (razão social) — preserva info via tooltip nativo
-- `<md` esconde a tabela e mostra cards verticais clicáveis
+- Bordas verticais (`border-r`) entre células dão estrutura visual de grid
 
 ### `fileParallelism: false` no Vitest do `apps/api`
 
