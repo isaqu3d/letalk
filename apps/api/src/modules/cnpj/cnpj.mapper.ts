@@ -4,6 +4,7 @@ import {
   estimateEmployeeRange,
   segmentFromCnae,
 } from "@letalk/shared";
+import type { CompanySnapshot } from "@prisma/client";
 import type { BrasilApiCnpjData } from "./brasil-api.schema";
 
 export interface CompanyData {
@@ -54,6 +55,25 @@ export function toCompanyData(raw: BrasilApiCnpjData): CompanyData {
     employeeRange: estimateEmployeeRange({
       porte: raw.porte ?? null,
       capitalSocial: raw.capital_social ?? null,
+    }),
+  };
+}
+
+export function snapshotToCompanyData(snapshot: CompanySnapshot): CompanyData {
+  return {
+    cnpj: snapshot.cnpj,
+    razaoSocial: snapshot.razaoSocial,
+    nomeFantasia: snapshot.nomeFantasia,
+    cnaePrincipal: snapshot.cnaePrincipal,
+    cnaeDescription: snapshot.cnaeDescription,
+    capitalSocial: snapshot.capitalSocial,
+    porte: snapshot.porte,
+    situacao: snapshot.situacao,
+    dataAbertura: snapshot.dataAbertura,
+    segment: segmentFromCnae(snapshot.cnaePrincipal),
+    employeeRange: estimateEmployeeRange({
+      porte: snapshot.porte,
+      capitalSocial: snapshot.capitalSocial,
     }),
   };
 }
