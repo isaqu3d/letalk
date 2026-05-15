@@ -13,7 +13,13 @@
     "lint": "turbo run lint",
     "test": "turbo run test",
     "build": "turbo run build",
-    "dev": "turbo run dev"
+    "dev": "turbo run dev",
+    "dev:api": "pnpm --filter @letalk/api dev",
+    "dev:web": "pnpm --filter @letalk/web dev",
+    "db:migrate": "pnpm --filter @letalk/api db:migrate",
+    "db:generate": "pnpm --filter @letalk/api db:generate",
+    "db:studio": "pnpm --filter @letalk/api db:studio",
+    "db:reset": "pnpm --filter @letalk/api db:reset"
   },
   "devDependencies": {
     "turbo": "^2.5.0"
