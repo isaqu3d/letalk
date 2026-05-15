@@ -5,6 +5,7 @@ import { LeadDetailPage } from "./features/lead-history/pages/lead-detail-page";
 import { LeadHistoryPage } from "./features/lead-history/pages/lead-history-page";
 import { LeadSearchPage } from "./features/lead-search/pages/lead-search-page";
 import { ROUTE_PATTERNS } from "./lib/routes";
+import { NotFoundPage } from "./pages/not-found-page";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -24,6 +25,10 @@ export function App() {
           <Route path={ROUTE_PATTERNS.home} element={<LeadSearchPage />} />
           <Route path={ROUTE_PATTERNS.history} element={<LeadHistoryPage />} />
           <Route path={ROUTE_PATTERNS.detail} element={<LeadDetailPage />} />
+          <Route
+            path={ROUTE_PATTERNS.notFound}
+            element={<NotFoundPage />}
+          />
         </Routes>
       </BrowserRouter>
     </QueryClientProvider>
