@@ -35,11 +35,17 @@ export const contactRoleSchema = z
   .min(ROLE_MIN_LENGTH, "Cargo deve ter ao menos 2 caracteres")
   .max(ROLE_MAX_LENGTH, "Cargo deve ter no máximo 80 caracteres");
 
+export const optionalContactRoleSchema = z.preprocess(
+  (value) =>
+    typeof value === "string" && value.trim().length === 0 ? undefined : value,
+  contactRoleSchema.optional(),
+);
+
 export const contactSchema = z.object({
   name: nameSchema,
   email: emailSchema,
   phone: phoneSchema,
-  role: contactRoleSchema.optional(),
+  role: optionalContactRoleSchema,
 });
 
 export type Contact = z.infer<typeof contactSchema>;
