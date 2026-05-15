@@ -27,7 +27,8 @@ export class LeadsController {
   async create(request: FastifyRequest, reply: FastifyReply) {
     const input = createLeadInputSchema.parse(request.body);
     const lead = await this.leadsService.createLead(input);
-    return reply.status(HttpStatus.CREATED).send(lead);
+    reply.status(HttpStatus.CREATED);
+    return lead;
   }
 
   async list(request: FastifyRequest) {
