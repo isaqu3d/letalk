@@ -1,4 +1,12 @@
+import fastifySwagger from "@fastify/swagger";
+import scalarApiReference from "@scalar/fastify-api-reference";
 import Fastify from "fastify";
+import {
+  jsonSchemaTransform,
+  serializerCompiler,
+  validatorCompiler,
+  type ZodTypeProvider,
+} from "fastify-type-provider-zod";
 import { env } from "./config/env";
 import { prisma } from "./infra/db/prisma";
 import {
@@ -31,11 +39,42 @@ export async function buildApp(options: BuildAppOptions = {}) {
       level: env.LOG_LEVEL,
       pretty: env.NODE_ENV === "development",
     }),
-  });
+  }).withTypeProvider<ZodTypeProvider>();
+
+  app.setValidatorCompiler(validatorCompiler);
+  app.setSerializerCompiler(serializerCompiler);
 
   await app.register(errorHandlerPlugin);
   await app.register(helmetPlugin);
   await app.register(corsPlugin);
+
+  await app.register(fastifySwagger, {
+    openapi: {
+      info: {
+        title: "Letalk — API de Enriquecimento de Leads",
+        description:
+          "API para cadastro de leads enriquecidos com dados públicos de empresa (BrasilAPI).",
+        version: "1.0.0",
+      },
+      servers: [{ url: `http://localhost:${env.PORT}` }],
+      tags: [
+        { name: "Health", description: "Status da aplicação" },
+        { name: "CNPJ", description: "Consulta de dados públicos de empresa" },
+        { name: "Leads", description: "Cadastro e consulta de leads" },
+      ],
+    },
+    transform: jsonSchemaTransform,
+  });
+
+  await app.register(scalarApiReference, {
+    routePrefix: "/docs",
+    configuration: {
+      theme: "purple",
+      metaData: {
+        title: "Letalk — API Reference",
+      },
+    },
+  });
 
   const shouldEnableRateLimit = options.withRateLimit ?? env.NODE_ENV !== "test";
   if (shouldEnableRateLimit) {
