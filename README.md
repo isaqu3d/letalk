@@ -25,6 +25,18 @@ Interface **responsiva ponta-a-ponta** (mobile + desktop), com loading states (s
 
 ---
 
+## 🌐 Aplicação em produção
+
+| Camada          | URL                                                    | Stack                     |
+| --------------- | ------------------------------------------------------ | ------------------------- |
+| 🎨 **Frontend** | [letalk-web.vercel.app](https://letalk-web.vercel.app) | Vercel (free)             |
+| ⚙️ **API**      | [letalk.onrender.com](https://letalk.onrender.com)     | Render Web Service (free) |
+| 🗄️ **Banco**    | Neon Postgres (free, `us-east-1`)                      | Postgres 16 serverless    |
+
+> ⏱ **Sobre o cold start**: o tier free do Render hiberna após 15min sem requests. A primeira chamada quando o container acorda pode levar **~30-50s**. Depois fica responsivo por novos ~15min. Em plano pago, eliminaria isso (always-on).
+
+---
+
 ## 🛠 Tecnologias
 
 | Categoria     | Tecnologia                         | Por quê                                                                 |
