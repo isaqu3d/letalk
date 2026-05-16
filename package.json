@@ -5,7 +5,7 @@
   "description": "Plataforma de enriquecimento de leads a partir de CNPJ — teste técnico Letalk",
   "type": "module",
   "engines": {
-    "node": ">=20",
+    "node": "22.x",
     "pnpm": ">=9"
   },
   "packageManager": "pnpm@10.30.3",
