@@ -23,7 +23,9 @@ const envSchema = z
     NODE_ENV: z.enum(NODE_ENVS).default("development"),
     PORT: z.coerce.number().int().positive().default(DEFAULT_PORT),
     LOG_LEVEL: z.enum(LOG_LEVELS).optional(),
-    CORS_ORIGIN: z.string().url().default(DEFAULT_CORS_ORIGIN),
+    CORS_ORIGIN: z
+      .union([z.literal("*"), z.string().url()])
+      .default(DEFAULT_CORS_ORIGIN),
     DATABASE_URL: z.string().min(1, "DATABASE_URL é obrigatório"),
     BRASIL_API_BASE_URL: z.string().url().default(DEFAULT_BRASIL_API_BASE_URL),
     CNPJ_CACHE_TTL_HOURS: z.coerce
@@ -46,6 +48,7 @@ function parseEnv(): Env {
     const details = result.error.issues
       .map((issue) => `  - ${issue.path.join(".") || "<root>"}: ${issue.message}`)
       .join("\n");
+    console.error(`\n❌ Configuração de ambiente inválida:\n${details}\n`);
     throw new Error(`Configuração de ambiente inválida:\n${details}`);
   }
   return result.data;
