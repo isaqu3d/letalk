@@ -88,9 +88,9 @@ export function LeadsTable({ leads, pageSize }: LeadsTableProps) {
               <Td>
                 <div
                   className="line-clamp-1 text-ink"
-                  title={lead.snapshot?.razaoSocial ?? undefined}
+                  title={lead.company.razaoSocial}
                 >
-                  {lead.snapshot?.razaoSocial ?? "—"}
+                  {lead.company.razaoSocial}
                 </div>
                 <div className="text-xs text-ink-soft">
                   {formatCnpj(lead.cnpj)}
@@ -179,9 +179,9 @@ function LeadCard({ lead }: LeadCardProps) {
         <div className="border-t border-surface-border pt-3">
           <div
             className="line-clamp-1 text-sm text-ink"
-            title={lead.snapshot?.razaoSocial ?? undefined}
+            title={lead.company.razaoSocial}
           >
-            {lead.snapshot?.razaoSocial ?? "—"}
+            {lead.company.razaoSocial}
           </div>
           <div className="text-xs text-ink-soft">{formatCnpj(lead.cnpj)}</div>
         </div>
