@@ -7,25 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model CompanySnapshot {
-  id              String    @id @default(cuid())
-  cnpj            String    @unique
-  rawData         Json
-  razaoSocial     String
-  nomeFantasia    String?
-  cnaePrincipal   String?
-  cnaeDescription String?
-  capitalSocial   Float?
-  porte           String?
-  situacao        String?
-  dataAbertura    DateTime?
-  fetchedAt       DateTime  @default(now())
-
-  leads Lead[]
-
-  @@map("company_snapshots")
-}
-
 model Lead {
   id            String   @id @default(cuid())
   name          String
@@ -37,8 +18,23 @@ model Lead {
   employeeRange String
   createdAt     DateTime @default(now())
 
-  snapshotId String?
-  snapshot   CompanySnapshot? @relation(fields: [snapshotId], references: [id])
+  razaoSocial     String
+  nomeFantasia    String?
+  cnaePrincipal   String?
+  cnaeDescription String?
+  capitalSocial   Float?
+  porte           String?
+  situacao        String?
+  dataAbertura    DateTime?
+
+  logradouro   String?
+  numero       String?
+  complemento  String?
+  bairro       String?
+  municipio    String?
+  uf           String?
+  cep          String?
+  socios       Json?
 
   @@unique([email, cnpj])
   @@index([cnpj])
