@@ -16,6 +16,7 @@ const NODE_ENVS = ["development", "test", "production"] as const;
 const DEFAULT_PORT = 3333;
 const DEFAULT_CORS_ORIGIN = "http://localhost:5173";
 const DEFAULT_BRASIL_API_BASE_URL = "https://brasilapi.com.br/api";
+const DEFAULT_REDIS_URL = "redis://localhost:6379";
 const DEFAULT_CNPJ_CACHE_TTL_HOURS = 24;
 
 const envSchema = z
@@ -28,6 +29,7 @@ const envSchema = z
       .default(DEFAULT_CORS_ORIGIN),
     DATABASE_URL: z.string().min(1, "DATABASE_URL é obrigatório"),
     BRASIL_API_BASE_URL: z.string().url().default(DEFAULT_BRASIL_API_BASE_URL),
+    REDIS_URL: z.string().min(1).default(DEFAULT_REDIS_URL),
     CNPJ_CACHE_TTL_HOURS: z.coerce
       .number()
       .int()
