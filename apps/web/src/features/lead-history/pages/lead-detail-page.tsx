@@ -7,6 +7,7 @@ import {
   formatCurrency,
   formatDate,
   formatDateTime,
+  formatEndereco,
   formatPhone,
 } from "@/lib/formatters";
 import { ROUTES } from "@/lib/routes";
@@ -53,14 +54,13 @@ export function LeadDetailPage() {
                   Empresa
                 </p>
                 <h1 className="mt-2 text-2xl font-medium text-ink">
-                  {query.data.snapshot?.razaoSocial ?? "Empresa"}
+                  {query.data.company.razaoSocial}
                 </h1>
-                {query.data.snapshot?.nomeFantasia !== null &&
-                  query.data.snapshot?.nomeFantasia !== undefined && (
-                    <p className="mt-0.5 text-sm text-ink-soft">
-                      {query.data.snapshot.nomeFantasia}
-                    </p>
-                  )}
+                {query.data.company.nomeFantasia !== null && (
+                  <p className="mt-0.5 text-sm text-ink-soft">
+                    {query.data.company.nomeFantasia}
+                  </p>
+                )}
               </div>
               <span
                 className={`rounded-full px-3 py-1 text-xs font-medium ${segmentBadgeClass(query.data.segment)}`}
@@ -75,30 +75,58 @@ export function LeadDetailPage() {
                 label="Faixa estimada"
                 value={employeeRangeLabel(query.data.employeeRange)}
               />
-              <InfoRow label="Porte" value={query.data.snapshot?.porte ?? "—"} />
+              <InfoRow label="Porte" value={query.data.company.porte ?? "—"} />
               <InfoRow
                 label="CNAE principal"
                 value={
-                  query.data.snapshot?.cnaePrincipal !== null &&
-                  query.data.snapshot?.cnaePrincipal !== undefined
-                    ? `${query.data.snapshot.cnaePrincipal} — ${query.data.snapshot.cnaeDescription ?? ""}`.trim()
+                  query.data.company.cnaePrincipal !== null
+                    ? `${query.data.company.cnaePrincipal} — ${query.data.company.cnaeDescription ?? ""}`.trim()
                     : "—"
                 }
               />
               <InfoRow
                 label="Capital social"
-                value={formatCurrency(query.data.snapshot?.capitalSocial ?? null)}
+                value={formatCurrency(query.data.company.capitalSocial)}
               />
               <InfoRow
                 label="Situação"
-                value={query.data.snapshot?.situacao ?? "—"}
+                value={query.data.company.situacao ?? "—"}
               />
               <InfoRow
                 label="Data de abertura"
-                value={formatDate(query.data.snapshot?.dataAbertura ?? null)}
+                value={formatDate(query.data.company.dataAbertura)}
               />
+              <div className="md:col-span-2 lg:col-span-3">
+                <InfoRow
+                  label="Endereço"
+                  value={formatEndereco(query.data.company.endereco)}
+                />
+              </div>
             </dl>
           </section>
+
+          {query.data.company.socios.length > 0 && (
+            <section className="rounded-xl border border-surface-border bg-surface p-6 shadow-sm">
+              <h2 className="mb-5 text-base font-medium text-ink">
+                Quadro societário
+              </h2>
+              <ul className="flex flex-col divide-y divide-surface-border">
+                {query.data.company.socios.map((socio) => (
+                  <li
+                    key={`${socio.nome}-${socio.qualificacao ?? ""}`}
+                    className="flex flex-wrap items-center justify-between gap-2 py-2.5 first:pt-0 last:pb-0"
+                  >
+                    <span className="text-sm font-medium text-ink">
+                      {socio.nome}
+                    </span>
+                    <span className="text-xs text-ink-soft">
+                      {socio.qualificacao ?? "—"}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
 
           <section className="rounded-xl border border-surface-border bg-surface p-6 shadow-sm">
             <h2 className="mb-5 text-base font-medium text-ink">Contato</h2>
