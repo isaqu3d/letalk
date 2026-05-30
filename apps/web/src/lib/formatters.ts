@@ -36,6 +36,42 @@ export const formatPhone = (digits: string): string => {
   return digits;
 };
 
+const CEP_LENGTH = 8;
+
+export const formatCep = (cep: string | null): string => {
+  if (cep === null) return "";
+  const digits = cep.replace(/\D/g, "");
+  if (digits.length !== CEP_LENGTH) return cep;
+  return `${digits.slice(0, 5)}-${digits.slice(5)}`;
+};
+
+interface EnderecoParts {
+  logradouro: string | null;
+  numero: string | null;
+  complemento: string | null;
+  bairro: string | null;
+  municipio: string | null;
+  uf: string | null;
+  cep: string | null;
+}
+
+export const formatEndereco = (endereco: EnderecoParts): string => {
+  const street = [endereco.logradouro, endereco.numero, endereco.complemento]
+    .filter((part) => part !== null && part.length > 0)
+    .join(", ");
+  const cityLine = [endereco.bairro, endereco.municipio]
+    .filter((part) => part !== null && part.length > 0)
+    .join(" — ");
+  const region = [
+    endereco.uf,
+    endereco.cep !== null ? `CEP ${formatCep(endereco.cep)}` : null,
+  ]
+    .filter((part) => part !== null && part.length > 0)
+    .join(" · ");
+  const full = [street, cityLine, region].filter((part) => part.length > 0);
+  return full.length > 0 ? full.join(" · ") : "—";
+};
+
 const EMPLOYEE_RANGE_LABEL: Record<string, string> = {
   "1-9": "1 a 9 funcionários",
   "10-49": "10 a 49 funcionários",
