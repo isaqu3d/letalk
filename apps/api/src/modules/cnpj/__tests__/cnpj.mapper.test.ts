@@ -12,6 +12,17 @@ const baseRaw: BrasilApiCnpjData = {
   porte: "DEMAIS",
   descricao_situacao_cadastral: "ATIVA",
   data_inicio_atividade: "1953-10-03",
+  logradouro: "REPUBLICA DO CHILE",
+  numero: "65",
+  complemento: "",
+  bairro: "CENTRO",
+  municipio: "RIO DE JANEIRO",
+  uf: "RJ",
+  cep: "20031170",
+  qsa: [
+    { nome_socio: "ANGELICA GARCIA COBAS LAUREANO", qualificacao_socio: "Diretor" },
+    { nome_socio: "JOAO DA SILVA", qualificacao_socio: null },
+  ],
 };
 
 describe("toCompanyData", () => {
@@ -61,6 +72,30 @@ describe("toCompanyData", () => {
     expect(result.dataAbertura).toBeNull();
     expect(result.segment).toBe("Outros");
     expect(result.employeeRange).toBe("unknown");
+    expect(result.municipio).toBeNull();
+    expect(result.socios).toEqual([]);
+  });
+
+  it("mapeia endereço e converte complemento vazio em null", () => {
+    const result = toCompanyData(baseRaw);
+
+    expect(result.logradouro).toBe("REPUBLICA DO CHILE");
+    expect(result.numero).toBe("65");
+    expect(result.complemento).toBeNull();
+    expect(result.municipio).toBe("RIO DE JANEIRO");
+    expect(result.uf).toBe("RJ");
+    expect(result.cep).toBe("20031170");
+  });
+
+  it("mapeia sócios do quadro societário (qsa)", () => {
+    const result = toCompanyData(baseRaw);
+
+    expect(result.socios).toHaveLength(2);
+    expect(result.socios[0]).toEqual({
+      nome: "ANGELICA GARCIA COBAS LAUREANO",
+      qualificacao: "Diretor",
+    });
+    expect(result.socios[1].qualificacao).toBeNull();
   });
 
   it("retorna null para dataAbertura quando string é inválida", () => {

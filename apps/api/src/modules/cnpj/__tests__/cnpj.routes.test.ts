@@ -3,6 +3,7 @@ import { type AppInstance, buildApp } from "../../../app";
 import { prisma } from "../../../infra/db/prisma";
 import type { BrasilApiClient } from "../../../infra/http/brasil-api.client";
 import type { BrasilApiCnpjData } from "../brasil-api.schema";
+import { InMemoryCnpjCache } from "../cnpj.cache";
 import { BrasilApiUnavailableError, CnpjNotFoundError } from "../cnpj.errors";
 
 const VALID_CNPJ = "33000167000101";
@@ -22,15 +23,16 @@ const RAW_PAYLOAD: BrasilApiCnpjData = {
 describe("GET /cnpj/:cnpj", () => {
   let app: AppInstance;
   const brasilApiClient: BrasilApiClient = { fetchCnpj: vi.fn() };
+  const cnpjCache = new InMemoryCnpjCache();
 
   beforeAll(async () => {
-    app = await buildApp({ withRateLimit: false, brasilApiClient });
+    app = await buildApp({ withRateLimit: false, brasilApiClient, cnpjCache });
   });
 
   afterEach(async () => {
     vi.mocked(brasilApiClient.fetchCnpj).mockReset();
+    cnpjCache.clear();
     await prisma.lead.deleteMany();
-    await prisma.companySnapshot.deleteMany();
   });
 
   afterAll(async () => {
