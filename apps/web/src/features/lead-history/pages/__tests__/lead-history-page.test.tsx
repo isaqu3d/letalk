@@ -18,8 +18,26 @@ function buildLead(overrides: Partial<Lead> = {}): Lead {
     segment: "Indústria",
     employeeRange: "250+",
     createdAt: new Date("2026-01-15T10:00:00Z").toISOString(),
-    snapshotId: "snap-1",
-    snapshot: null,
+    company: {
+      razaoSocial: "PETROLEO BRASILEIRO S A PETROBRAS",
+      nomeFantasia: "PETROBRAS",
+      cnaePrincipal: "0600001",
+      cnaeDescription: "Extração de petróleo e gás natural",
+      capitalSocial: 205431960000,
+      porte: "DEMAIS",
+      situacao: "ATIVA",
+      dataAbertura: "1966-09-28T00:00:00.000Z",
+      endereco: {
+        logradouro: "REPUBLICA DO CHILE",
+        numero: "65",
+        complemento: null,
+        bairro: "CENTRO",
+        municipio: "RIO DE JANEIRO",
+        uf: "RJ",
+        cep: "20031170",
+      },
+      socios: [{ nome: "JOAO DA SILVA", qualificacao: "Diretor" }],
+    },
     ...overrides,
   };
 }
