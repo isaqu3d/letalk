@@ -6,6 +6,7 @@ import {
   employeeRangeLabel,
   formatCurrency,
   formatDate,
+  formatEndereco,
   formatPhone,
 } from "@/lib/formatters";
 import { ROUTES } from "@/lib/routes";
@@ -18,10 +19,10 @@ interface LeadResultProps {
 }
 
 export function LeadResult({ lead, onReset }: LeadResultProps) {
-  const snapshot = lead.snapshot;
+  const { company } = lead;
   const cnaeDisplay =
-    snapshot?.cnaePrincipal !== null && snapshot?.cnaePrincipal !== undefined
-      ? `${snapshot.cnaePrincipal} — ${snapshot.cnaeDescription ?? ""}`.trim()
+    company.cnaePrincipal !== null
+      ? `${company.cnaePrincipal} — ${company.cnaeDescription ?? ""}`.trim()
       : "—";
 
   return (
@@ -37,14 +38,13 @@ export function LeadResult({ lead, onReset }: LeadResultProps) {
         <header className="mb-5 flex flex-wrap items-start justify-between gap-3">
           <div>
             <h2 className="text-xl font-medium text-ink">
-              {snapshot?.razaoSocial ?? "Empresa"}
+              {company.razaoSocial}
             </h2>
-            {snapshot?.nomeFantasia !== null &&
-              snapshot?.nomeFantasia !== undefined && (
-                <p className="mt-0.5 text-sm text-ink-soft">
-                  {snapshot.nomeFantasia}
-                </p>
-              )}
+            {company.nomeFantasia !== null && (
+              <p className="mt-0.5 text-sm text-ink-soft">
+                {company.nomeFantasia}
+              </p>
+            )}
           </div>
           <span
             className={`rounded-full px-3 py-1 text-xs font-medium ${segmentBadgeClass(lead.segment)}`}
@@ -56,18 +56,44 @@ export function LeadResult({ lead, onReset }: LeadResultProps) {
         <dl className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
           <InfoRow label="CNPJ" value={formatCnpj(lead.cnpj)} />
           <InfoRow label="Faixa estimada" value={employeeRangeLabel(lead.employeeRange)} />
-          <InfoRow label="Porte" value={snapshot?.porte ?? "—"} />
+          <InfoRow label="Porte" value={company.porte ?? "—"} />
           <InfoRow label="CNAE principal" value={cnaeDisplay} />
           <InfoRow
             label="Capital social"
-            value={formatCurrency(snapshot?.capitalSocial ?? null)}
+            value={formatCurrency(company.capitalSocial)}
           />
-          <InfoRow label="Situação" value={snapshot?.situacao ?? "—"} />
+          <InfoRow label="Situação" value={company.situacao ?? "—"} />
           <InfoRow
             label="Data de abertura"
-            value={formatDate(snapshot?.dataAbertura ?? null)}
+            value={formatDate(company.dataAbertura)}
           />
+          <div className="md:col-span-2 lg:col-span-3">
+            <InfoRow label="Endereço" value={formatEndereco(company.endereco)} />
+          </div>
         </dl>
+
+        {company.socios.length > 0 && (
+          <div className="mt-6 border-t border-surface-border pt-5">
+            <h3 className="mb-3 text-[11px] font-medium uppercase tracking-wider text-ink-soft">
+              Quadro societário
+            </h3>
+            <ul className="flex flex-col divide-y divide-surface-border">
+              {company.socios.map((socio) => (
+                <li
+                  key={`${socio.nome}-${socio.qualificacao ?? ""}`}
+                  className="flex flex-wrap items-center justify-between gap-2 py-2 first:pt-0 last:pb-0"
+                >
+                  <span className="text-sm font-medium text-ink">
+                    {socio.nome}
+                  </span>
+                  <span className="text-xs text-ink-soft">
+                    {socio.qualificacao ?? "—"}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </article>
 
       <article className="rounded-xl border border-surface-border bg-surface p-6 shadow-sm">
