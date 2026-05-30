@@ -1,6 +1,19 @@
-export interface CompanySnapshot {
-  id: string;
-  cnpj: string;
+export interface Endereco {
+  logradouro: string | null;
+  numero: string | null;
+  complemento: string | null;
+  bairro: string | null;
+  municipio: string | null;
+  uf: string | null;
+  cep: string | null;
+}
+
+export interface Socio {
+  nome: string;
+  qualificacao: string | null;
+}
+
+export interface Company {
   razaoSocial: string;
   nomeFantasia: string | null;
   cnaePrincipal: string | null;
@@ -9,7 +22,8 @@ export interface CompanySnapshot {
   porte: string | null;
   situacao: string | null;
   dataAbertura: string | null;
-  fetchedAt: string;
+  endereco: Endereco;
+  socios: Socio[];
 }
 
 export interface Lead {
@@ -22,8 +36,7 @@ export interface Lead {
   segment: string;
   employeeRange: string;
   createdAt: string;
-  snapshotId: string | null;
-  snapshot: CompanySnapshot | null;
+  company: Company;
 }
 
 export interface PaginatedLeads {
