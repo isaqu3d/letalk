@@ -4,8 +4,12 @@ import {
   estimateEmployeeRange,
   segmentFromCnae,
 } from "@letalk/shared";
-import type { CompanySnapshot } from "@prisma/client";
 import type { BrasilApiCnpjData } from "./brasil-api.schema";
+
+export interface CompanySocio {
+  nome: string;
+  qualificacao: string | null;
+}
 
 export interface CompanyData {
   cnpj: string;
@@ -19,9 +23,28 @@ export interface CompanyData {
   dataAbertura: Date | null;
   segment: CnaeSegment;
   employeeRange: EmployeeRange;
+  logradouro: string | null;
+  numero: string | null;
+  complemento: string | null;
+  bairro: string | null;
+  municipio: string | null;
+  uf: string | null;
+  cep: string | null;
+  socios: CompanySocio[];
 }
 
 const CNAE_CODE_LENGTH = 7;
+
+function emptyToNull(value: string | null | undefined): string | null {
+  return value ? value : null;
+}
+
+function parseSocios(raw: BrasilApiCnpjData): CompanySocio[] {
+  return (raw.qsa ?? []).map((socio) => ({
+    nome: socio.nome_socio,
+    qualificacao: emptyToNull(socio.qualificacao_socio),
+  }));
+}
 
 function parseCnaePrincipal(raw: BrasilApiCnpjData): string | null {
   if (raw.cnae_fiscal === null || raw.cnae_fiscal === undefined) {
@@ -56,24 +79,13 @@ export function toCompanyData(raw: BrasilApiCnpjData): CompanyData {
       porte: raw.porte ?? null,
       capitalSocial: raw.capital_social ?? null,
     }),
-  };
-}
-
-export function snapshotToCompanyData(snapshot: CompanySnapshot): CompanyData {
-  return {
-    cnpj: snapshot.cnpj,
-    razaoSocial: snapshot.razaoSocial,
-    nomeFantasia: snapshot.nomeFantasia,
-    cnaePrincipal: snapshot.cnaePrincipal,
-    cnaeDescription: snapshot.cnaeDescription,
-    capitalSocial: snapshot.capitalSocial,
-    porte: snapshot.porte,
-    situacao: snapshot.situacao,
-    dataAbertura: snapshot.dataAbertura,
-    segment: segmentFromCnae(snapshot.cnaePrincipal),
-    employeeRange: estimateEmployeeRange({
-      porte: snapshot.porte,
-      capitalSocial: snapshot.capitalSocial,
-    }),
+    logradouro: emptyToNull(raw.logradouro),
+    numero: emptyToNull(raw.numero),
+    complemento: emptyToNull(raw.complemento),
+    bairro: emptyToNull(raw.bairro),
+    municipio: emptyToNull(raw.municipio),
+    uf: emptyToNull(raw.uf),
+    cep: emptyToNull(raw.cep),
+    socios: parseSocios(raw),
   };
 }
