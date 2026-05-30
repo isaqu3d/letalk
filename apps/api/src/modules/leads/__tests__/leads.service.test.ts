@@ -2,13 +2,10 @@ import type { CreateLeadInput } from "@letalk/shared";
 import { Prisma } from "@prisma/client";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { InvalidCnpjError } from "../../cnpj/cnpj.errors";
-import type { CompanyDataWithSnapshot } from "../../cnpj/cnpj.service";
-import type { CnpjServiceDeps } from "../leads.service";
+import type { CompanyData } from "../../cnpj/cnpj.mapper";
 import { DuplicateLeadError, LeadNotFoundError } from "../leads.errors";
-import type {
-  LeadsRepository,
-  LeadWithSnapshot,
-} from "../leads.repository";
+import type { CnpjServiceDeps } from "../leads.service";
+import type { LeadRecord, LeadsRepository } from "../leads.repository";
 import { LeadsService } from "../leads.service";
 
 const VALID_CNPJ = "33000167000101";
@@ -21,24 +18,29 @@ const SAMPLE_INPUT: CreateLeadInput = {
   role: "Diretora Comercial",
 };
 
-const SAMPLE_SNAPSHOT_RESULT: CompanyDataWithSnapshot = {
-  snapshotId: "snap-1",
-  companyData: {
-    cnpj: VALID_CNPJ,
-    razaoSocial: "PETROLEO BRASILEIRO S A PETROBRAS",
-    nomeFantasia: "PETROBRAS",
-    cnaePrincipal: "0600001",
-    cnaeDescription: "Extração de petróleo e gás natural",
-    capitalSocial: 205431960000,
-    porte: "DEMAIS",
-    situacao: "ATIVA",
-    dataAbertura: new Date("1966-09-28"),
-    segment: "Indústria",
-    employeeRange: "250+",
-  },
+const SAMPLE_COMPANY: CompanyData = {
+  cnpj: VALID_CNPJ,
+  razaoSocial: "PETROLEO BRASILEIRO S A PETROBRAS",
+  nomeFantasia: "PETROBRAS",
+  cnaePrincipal: "0600001",
+  cnaeDescription: "Extração de petróleo e gás natural",
+  capitalSocial: 205431960000,
+  porte: "DEMAIS",
+  situacao: "ATIVA",
+  dataAbertura: new Date("1966-09-28"),
+  segment: "Indústria",
+  employeeRange: "250+",
+  logradouro: "REPUBLICA DO CHILE",
+  numero: "65",
+  complemento: null,
+  bairro: "CENTRO",
+  municipio: "RIO DE JANEIRO",
+  uf: "RJ",
+  cep: "20031170",
+  socios: [{ nome: "JOAO DA SILVA", qualificacao: "Diretor" }],
 };
 
-function createLead(overrides: Partial<LeadWithSnapshot> = {}): LeadWithSnapshot {
+function createLead(overrides: Partial<LeadRecord> = {}): LeadRecord {
   return {
     id: "lead-1",
     name: "Maria Silva",
@@ -49,8 +51,22 @@ function createLead(overrides: Partial<LeadWithSnapshot> = {}): LeadWithSnapshot
     segment: "Indústria",
     employeeRange: "250+",
     createdAt: new Date(),
-    snapshotId: "snap-1",
-    snapshot: null,
+    razaoSocial: "PETROLEO BRASILEIRO S A PETROBRAS",
+    nomeFantasia: "PETROBRAS",
+    cnaePrincipal: "0600001",
+    cnaeDescription: "Extração de petróleo e gás natural",
+    capitalSocial: 205431960000,
+    porte: "DEMAIS",
+    situacao: "ATIVA",
+    dataAbertura: new Date("1966-09-28"),
+    logradouro: "REPUBLICA DO CHILE",
+    numero: "65",
+    complemento: null,
+    bairro: "CENTRO",
+    municipio: "RIO DE JANEIRO",
+    uf: "RJ",
+    cep: "20031170",
+    socios: [{ nome: "JOAO DA SILVA", qualificacao: "Diretor" }],
     ...overrides,
   };
 }
@@ -62,7 +78,7 @@ describe("LeadsService.createLead", () => {
 
   beforeEach(() => {
     cnpjService = {
-      getCompanyDataWithSnapshot: vi.fn(),
+      getCompanyData: vi.fn(),
     };
     leadsRepository = {
       create: vi.fn(),
@@ -73,9 +89,7 @@ describe("LeadsService.createLead", () => {
   });
 
   it("cria lead enriquecido com segment e employeeRange a partir do CNPJ", async () => {
-    vi.mocked(cnpjService.getCompanyDataWithSnapshot).mockResolvedValue(
-      SAMPLE_SNAPSHOT_RESULT,
-    );
+    vi.mocked(cnpjService.getCompanyData).mockResolvedValue(SAMPLE_COMPANY);
     vi.mocked(leadsRepository.create).mockResolvedValue(createLead());
 
     await service.createLead(SAMPLE_INPUT);
@@ -88,15 +102,13 @@ describe("LeadsService.createLead", () => {
         contactRole: "Diretora Comercial",
         segment: "Indústria",
         employeeRange: "250+",
-        snapshotId: "snap-1",
+        razaoSocial: "PETROLEO BRASILEIRO S A PETROBRAS",
       }),
     );
   });
 
   it("aceita lead sem role (contactRole vira null)", async () => {
-    vi.mocked(cnpjService.getCompanyDataWithSnapshot).mockResolvedValue(
-      SAMPLE_SNAPSHOT_RESULT,
-    );
+    vi.mocked(cnpjService.getCompanyData).mockResolvedValue(SAMPLE_COMPANY);
     vi.mocked(leadsRepository.create).mockResolvedValue(createLead({ contactRole: null }));
     const { role: _role, ...inputWithoutRole } = SAMPLE_INPUT;
 
@@ -108,9 +120,7 @@ describe("LeadsService.createLead", () => {
   });
 
   it("lança DuplicateLeadError quando Prisma retorna P2002 (unique violation)", async () => {
-    vi.mocked(cnpjService.getCompanyDataWithSnapshot).mockResolvedValue(
-      SAMPLE_SNAPSHOT_RESULT,
-    );
+    vi.mocked(cnpjService.getCompanyData).mockResolvedValue(SAMPLE_COMPANY);
     const uniqueError = new Prisma.PrismaClientKnownRequestError(
       "Unique constraint violation",
       { code: "P2002", clientVersion: "6.0.0" },
@@ -123,7 +133,7 @@ describe("LeadsService.createLead", () => {
   });
 
   it("propaga InvalidCnpjError do cnpjService quando CNPJ é inválido", async () => {
-    vi.mocked(cnpjService.getCompanyDataWithSnapshot).mockRejectedValue(
+    vi.mocked(cnpjService.getCompanyData).mockRejectedValue(
       new InvalidCnpjError("11111111111111"),
     );
 
@@ -134,9 +144,7 @@ describe("LeadsService.createLead", () => {
   });
 
   it("propaga outros erros do Prisma sem mascarar", async () => {
-    vi.mocked(cnpjService.getCompanyDataWithSnapshot).mockResolvedValue(
-      SAMPLE_SNAPSHOT_RESULT,
-    );
+    vi.mocked(cnpjService.getCompanyData).mockResolvedValue(SAMPLE_COMPANY);
     const otherError = new Prisma.PrismaClientKnownRequestError(
       "DB indisponível",
       { code: "P1001", clientVersion: "6.0.0" },
@@ -154,7 +162,7 @@ describe("LeadsService.getLeadById", () => {
 
   beforeEach(() => {
     cnpjService = {
-      getCompanyDataWithSnapshot: vi.fn(),
+      getCompanyData: vi.fn(),
     };
     leadsRepository = {
       create: vi.fn(),
@@ -164,13 +172,13 @@ describe("LeadsService.getLeadById", () => {
     service = new LeadsService(cnpjService, leadsRepository);
   });
 
-  it("retorna o lead com snapshot quando encontrado", async () => {
-    const leadWithSnapshot = createLead();
-    vi.mocked(leadsRepository.findById).mockResolvedValue(leadWithSnapshot);
+  it("retorna o lead quando encontrado", async () => {
+    const lead = createLead();
+    vi.mocked(leadsRepository.findById).mockResolvedValue(lead);
 
     const result = await service.getLeadById("lead-1");
 
-    expect(result).toBe(leadWithSnapshot);
+    expect(result).toBe(lead);
   });
 
   it("lança LeadNotFoundError quando lead não existe", async () => {
@@ -185,7 +193,7 @@ describe("LeadsService.getLeadById", () => {
 describe("LeadsService.listLeads", () => {
   it("repassa opções de paginação ao repository", async () => {
     const cnpjService: CnpjServiceDeps = {
-      getCompanyDataWithSnapshot: vi.fn(),
+      getCompanyData: vi.fn(),
     };
     const leadsRepository: LeadsRepository = {
       create: vi.fn(),

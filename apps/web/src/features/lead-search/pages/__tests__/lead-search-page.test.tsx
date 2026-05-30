@@ -19,10 +19,7 @@ const SAMPLE_LEAD: Lead = {
   segment: "Indústria",
   employeeRange: "250+",
   createdAt: new Date().toISOString(),
-  snapshotId: "snap-1",
-  snapshot: {
-    id: "snap-1",
-    cnpj: VALID_CNPJ,
+  company: {
     razaoSocial: "PETROLEO BRASILEIRO S A PETROBRAS",
     nomeFantasia: "PETROBRAS",
     cnaePrincipal: "0600001",
@@ -31,7 +28,16 @@ const SAMPLE_LEAD: Lead = {
     porte: "DEMAIS",
     situacao: "ATIVA",
     dataAbertura: "1966-09-28T00:00:00.000Z",
-    fetchedAt: new Date().toISOString(),
+    endereco: {
+      logradouro: "REPUBLICA DO CHILE",
+      numero: "65",
+      complemento: null,
+      bairro: "CENTRO",
+      municipio: "RIO DE JANEIRO",
+      uf: "RJ",
+      cep: "20031170",
+    },
+    socios: [{ nome: "JOAO DA SILVA", qualificacao: "Diretor" }],
   },
 };
 

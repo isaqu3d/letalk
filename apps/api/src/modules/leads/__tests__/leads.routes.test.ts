@@ -3,6 +3,7 @@ import { type AppInstance, buildApp } from "../../../app";
 import { prisma } from "../../../infra/db/prisma";
 import type { BrasilApiClient } from "../../../infra/http/brasil-api.client";
 import type { BrasilApiCnpjData } from "../../cnpj/brasil-api.schema";
+import { InMemoryCnpjCache } from "../../cnpj/cnpj.cache";
 
 const VALID_CNPJ = "33000167000101";
 
@@ -16,6 +17,12 @@ const RAW_PAYLOAD: BrasilApiCnpjData = {
   porte: "DEMAIS",
   descricao_situacao_cadastral: "ATIVA",
   data_inicio_atividade: "1966-09-28",
+  logradouro: "REPUBLICA DO CHILE",
+  numero: "65",
+  municipio: "RIO DE JANEIRO",
+  uf: "RJ",
+  cep: "20031170",
+  qsa: [{ nome_socio: "JOAO DA SILVA", qualificacao_socio: "Diretor" }],
 };
 
 const VALID_PAYLOAD = {
@@ -29,15 +36,16 @@ const VALID_PAYLOAD = {
 describe("Leads endpoints", () => {
   let app: AppInstance;
   const brasilApiClient: BrasilApiClient = { fetchCnpj: vi.fn() };
+  const cnpjCache = new InMemoryCnpjCache();
 
   beforeAll(async () => {
-    app = await buildApp({ withRateLimit: false, brasilApiClient });
+    app = await buildApp({ withRateLimit: false, brasilApiClient, cnpjCache });
   });
 
   afterEach(async () => {
     vi.mocked(brasilApiClient.fetchCnpj).mockReset();
+    cnpjCache.clear();
     await prisma.lead.deleteMany();
-    await prisma.companySnapshot.deleteMany();
   });
 
   afterAll(async () => {
@@ -154,7 +162,7 @@ describe("Leads endpoints", () => {
   });
 
   describe("GET /leads/:id", () => {
-    it("retorna 200 com snapshot incluído quando lead existe", async () => {
+    it("retorna 200 com dados da empresa quando lead existe", async () => {
       vi.mocked(brasilApiClient.fetchCnpj).mockResolvedValue(RAW_PAYLOAD);
       const created = await app.inject({
         method: "POST",
@@ -168,12 +176,20 @@ describe("Leads endpoints", () => {
       expect(response.statusCode).toBe(200);
       const body = response.json() as {
         id: string;
-        snapshot: { razaoSocial: string } | null;
+        company: {
+          razaoSocial: string;
+          endereco: { municipio: string | null; uf: string | null };
+          socios: Array<{ nome: string; qualificacao: string | null }>;
+        };
       };
       expect(body.id).toBe(id);
-      expect(body.snapshot?.razaoSocial).toBe(
+      expect(body.company.razaoSocial).toBe(
         "PETROLEO BRASILEIRO S A PETROBRAS",
       );
+      expect(body.company.endereco.municipio).toBe("RIO DE JANEIRO");
+      expect(body.company.endereco.uf).toBe("RJ");
+      expect(body.company.socios).toHaveLength(1);
+      expect(body.company.socios[0].nome).toBe("JOAO DA SILVA");
     });
 
     it("retorna 404 com code LEAD_NOT_FOUND quando lead não existe", async () => {
