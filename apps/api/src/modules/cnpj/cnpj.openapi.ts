@@ -8,6 +8,21 @@ export const cnpjParamsSchema = z.object({
     .describe("CNPJ com ou sem máscara"),
 });
 
+export const enderecoResponseSchema = z.object({
+  logradouro: z.string().nullable(),
+  numero: z.string().nullable(),
+  complemento: z.string().nullable(),
+  bairro: z.string().nullable(),
+  municipio: z.string().nullable(),
+  uf: z.string().nullable(),
+  cep: z.string().nullable(),
+});
+
+export const socioResponseSchema = z.object({
+  nome: z.string(),
+  qualificacao: z.string().nullable(),
+});
+
 export const companyDataResponseSchema = z.object({
   cnpj: z.string(),
   razaoSocial: z.string(),
@@ -22,6 +37,8 @@ export const companyDataResponseSchema = z.object({
   employeeRange: z
     .string()
     .describe("Faixa estimada de funcionários (1-9, 10-49, 50-249, 250+, unknown)"),
+  endereco: enderecoResponseSchema,
+  socios: z.array(socioResponseSchema),
 });
 
 export const apiErrorResponseSchema = z.object({
@@ -50,6 +67,14 @@ interface CompanyDataDomain {
   dataAbertura: Date | null;
   segment: string;
   employeeRange: string;
+  logradouro: string | null;
+  numero: string | null;
+  complemento: string | null;
+  bairro: string | null;
+  municipio: string | null;
+  uf: string | null;
+  cep: string | null;
+  socios: Array<{ nome: string; qualificacao: string | null }>;
 }
 
 export const toCompanyDataResponse = (
@@ -66,4 +91,14 @@ export const toCompanyDataResponse = (
   dataAbertura: data.dataAbertura?.toISOString() ?? null,
   segment: data.segment,
   employeeRange: data.employeeRange,
+  endereco: {
+    logradouro: data.logradouro,
+    numero: data.numero,
+    complemento: data.complemento,
+    bairro: data.bairro,
+    municipio: data.municipio,
+    uf: data.uf,
+    cep: data.cep,
+  },
+  socios: data.socios,
 });
