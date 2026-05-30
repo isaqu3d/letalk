@@ -1,5 +1,12 @@
 import { z } from "zod";
 
+const brasilApiSocioSchema = z
+  .object({
+    nome_socio: z.string(),
+    qualificacao_socio: z.string().nullable().optional(),
+  })
+  .passthrough();
+
 export const brasilApiCnpjSchema = z
   .object({
     cnpj: z.string(),
@@ -11,6 +18,14 @@ export const brasilApiCnpjSchema = z
     porte: z.string().nullable().optional(),
     descricao_situacao_cadastral: z.string().nullable().optional(),
     data_inicio_atividade: z.string().nullable().optional(),
+    logradouro: z.string().nullable().optional(),
+    numero: z.string().nullable().optional(),
+    complemento: z.string().nullable().optional(),
+    bairro: z.string().nullable().optional(),
+    municipio: z.string().nullable().optional(),
+    uf: z.string().nullable().optional(),
+    cep: z.string().nullable().optional(),
+    qsa: z.array(brasilApiSocioSchema).nullable().optional(),
   })
   .passthrough();
 
