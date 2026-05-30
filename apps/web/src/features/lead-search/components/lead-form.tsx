@@ -1,31 +1,40 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { type CreateLeadInput, createLeadInputSchema } from "@letalk/shared";
 import type { ComponentPropsWithoutRef, ReactNode } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, type Control, useForm } from "react-hook-form";
+import { IMaskInput } from "react-imask";
 import { Spinner } from "@/components/spinner";
+
+type LeadFormInput = Omit<CreateLeadInput, "role"> & { role?: unknown };
+type LeadFormControl = Control<LeadFormInput, unknown, CreateLeadInput>;
 
 interface LeadFormProps {
   onSubmit: (data: CreateLeadInput) => void;
   isPending: boolean;
 }
 
-interface FieldProps extends ComponentPropsWithoutRef<"input"> {
+const inputClassName =
+  "w-full rounded-xl border border-surface-border bg-surface px-3.5 py-2.5 text-sm text-ink outline-none transition placeholder:text-ink-placeholder focus:border-brand-500 focus:ring-4 focus:ring-brand-100 disabled:bg-surface-soft";
+
+const phoneMask = "(00) 0000[0]-0000";
+
+const cnpjMask = "00.000.000/0000-00";
+
+interface FieldShellProps {
+  id: string;
   label: string;
   error?: string;
   hint?: string;
+  children: ReactNode;
 }
 
-function Field({ label, error, hint, id, ...inputProps }: FieldProps) {
+function FieldShell({ id, label, error, hint, children }: FieldShellProps) {
   return (
     <div className="flex flex-col gap-1">
       <label htmlFor={id} className="text-sm font-medium text-ink">
         {label}
       </label>
-      <input
-        id={id}
-        {...inputProps}
-        className="w-full rounded-xl border border-surface-border bg-surface px-3.5 py-2.5 text-sm text-ink outline-none transition placeholder:text-ink-placeholder focus:border-brand-500 focus:ring-4 focus:ring-brand-100 disabled:bg-surface-soft"
-      />
+      {children}
       {hint !== undefined && error === undefined && (
         <span className="text-xs text-ink-soft">{hint}</span>
       )}
@@ -35,6 +44,63 @@ function Field({ label, error, hint, id, ...inputProps }: FieldProps) {
         </span>
       )}
     </div>
+  );
+}
+
+interface FieldProps extends ComponentPropsWithoutRef<"input"> {
+  label: string;
+  error?: string;
+  hint?: string;
+  id: string;
+}
+
+function Field({ label, error, hint, id, ...inputProps }: FieldProps) {
+  return (
+    <FieldShell id={id} label={label} error={error} hint={hint}>
+      <input id={id} {...inputProps} className={inputClassName} />
+    </FieldShell>
+  );
+}
+
+interface MaskedFieldProps {
+  id: "phone" | "cnpj";
+  label: string;
+  mask: string;
+  placeholder: string;
+  hint?: string;
+  error?: string;
+  control: LeadFormControl;
+}
+
+function MaskedField({
+  id,
+  label,
+  mask,
+  placeholder,
+  hint,
+  error,
+  control,
+}: MaskedFieldProps) {
+  return (
+    <FieldShell id={id} label={label} error={error} hint={hint}>
+      <Controller
+        name={id}
+        control={control}
+        render={({ field }) => (
+          <IMaskInput
+            id={id}
+            mask={mask}
+            value={field.value ?? ""}
+            unmask={false}
+            onAccept={field.onChange}
+            onBlur={field.onBlur}
+            inputRef={field.ref}
+            placeholder={placeholder}
+            className={inputClassName}
+          />
+        )}
+      />
+    </FieldShell>
   );
 }
 
@@ -61,9 +127,10 @@ function Card({ title, description, children }: CardProps) {
 export function LeadForm({ onSubmit, isPending }: LeadFormProps) {
   const {
     register,
+    control,
     handleSubmit,
     formState: { errors },
-  } = useForm({
+  } = useForm<LeadFormInput, unknown, CreateLeadInput>({
     resolver: zodResolver(createLeadInputSchema),
     defaultValues: { name: "", email: "", phone: "", cnpj: "", role: "" },
   });
@@ -96,14 +163,14 @@ export function LeadForm({ onSubmit, isPending }: LeadFormProps) {
             error={errors.email?.message}
             {...register("email")}
           />
-          <Field
+          <MaskedField
             id="phone"
             label="Telefone"
+            mask={phoneMask}
             placeholder="(11) 91234-5678"
-            autoComplete="tel"
-            hint="10 ou 11 dígitos, com ou sem máscara"
+            hint="DDD + número, fixo ou celular"
             error={errors.phone?.message}
-            {...register("phone")}
+            control={control}
           />
           <Field
             id="role"
@@ -119,13 +186,13 @@ export function LeadForm({ onSubmit, isPending }: LeadFormProps) {
         title="Empresa"
         description="Informe o CNPJ para buscarmos os dados públicos da empresa na BrasilAPI."
       >
-        <Field
+        <MaskedField
           id="cnpj"
           label="CNPJ"
+          mask={cnpjMask}
           placeholder="00.000.000/0000-00"
-          hint="Aceitamos com ou sem máscara"
           error={errors.cnpj?.message}
-          {...register("cnpj")}
+          control={control}
         />
       </Card>
 
