@@ -6,5 +6,7 @@ export const helmetPlugin = fp(async (app) => {
   if (env.NODE_ENV !== "production") {
     return;
   }
-  await app.register(fastifyHelmet);
+  await app.register(fastifyHelmet, {
+    contentSecurityPolicy: false,
+  });
 });
