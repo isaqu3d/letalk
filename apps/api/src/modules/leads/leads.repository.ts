@@ -1,4 +1,5 @@
-import type { Prisma, PrismaClient } from "@prisma/client";
+import type { Lead, Prisma, PrismaClient } from "@prisma/client";
+import type { CompanySocio } from "../cnpj/cnpj.mapper";
 
 export interface CreateLeadInput {
   name: string;
@@ -8,7 +9,22 @@ export interface CreateLeadInput {
   contactRole: string | null;
   segment: string;
   employeeRange: string;
-  snapshotId: string;
+  razaoSocial: string;
+  nomeFantasia: string | null;
+  cnaePrincipal: string | null;
+  cnaeDescription: string | null;
+  capitalSocial: number | null;
+  porte: string | null;
+  situacao: string | null;
+  dataAbertura: Date | null;
+  logradouro: string | null;
+  numero: string | null;
+  complemento: string | null;
+  bairro: string | null;
+  municipio: string | null;
+  uf: string | null;
+  cep: string | null;
+  socios: CompanySocio[];
 }
 
 export interface ListLeadsOptions {
@@ -16,45 +32,31 @@ export interface ListLeadsOptions {
   offset: number;
 }
 
-export type LeadWithSnapshot = Prisma.LeadGetPayload<{
-  include: { snapshot: true };
-}>;
+export type LeadRecord = Lead;
 
 export interface ListLeadsResult {
-  items: LeadWithSnapshot[];
+  items: LeadRecord[];
   total: number;
 }
 
 export interface LeadsRepository {
-  create(input: CreateLeadInput): Promise<LeadWithSnapshot>;
-  findById(id: string): Promise<LeadWithSnapshot | null>;
+  create(input: CreateLeadInput): Promise<LeadRecord>;
+  findById(id: string): Promise<LeadRecord | null>;
   list(options: ListLeadsOptions): Promise<ListLeadsResult>;
 }
 
 export class PrismaLeadsRepository implements LeadsRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
-  async create(input: CreateLeadInput): Promise<LeadWithSnapshot> {
+  async create(input: CreateLeadInput): Promise<LeadRecord> {
+    const { socios, ...rest } = input;
     return this.prisma.lead.create({
-      data: {
-        name: input.name,
-        email: input.email,
-        phone: input.phone,
-        cnpj: input.cnpj,
-        contactRole: input.contactRole,
-        segment: input.segment,
-        employeeRange: input.employeeRange,
-        snapshotId: input.snapshotId,
-      },
-      include: { snapshot: true },
+      data: { ...rest, socios: socios as unknown as Prisma.InputJsonValue },
     });
   }
 
-  async findById(id: string): Promise<LeadWithSnapshot | null> {
-    return this.prisma.lead.findUnique({
-      where: { id },
-      include: { snapshot: true },
-    });
+  async findById(id: string): Promise<LeadRecord | null> {
+    return this.prisma.lead.findUnique({ where: { id } });
   }
 
   async list(options: ListLeadsOptions): Promise<ListLeadsResult> {
@@ -63,7 +65,6 @@ export class PrismaLeadsRepository implements LeadsRepository {
         skip: options.offset,
         take: options.limit,
         orderBy: { createdAt: "desc" },
-        include: { snapshot: true },
       }),
       this.prisma.lead.count(),
     ]);

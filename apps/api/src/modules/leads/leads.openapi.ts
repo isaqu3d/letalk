@@ -1,5 +1,9 @@
 import { z } from "zod";
-import { companyDataResponseSchema } from "../cnpj/cnpj.openapi";
+import {
+  companyDataResponseSchema,
+  enderecoResponseSchema,
+  socioResponseSchema,
+} from "../cnpj/cnpj.openapi";
 
 export const leadIdParamsSchema = z.object({
   id: z.string().min(1).describe("ID do lead (cuid)"),
@@ -21,9 +25,7 @@ export const listLeadsQuerySchema = z.object({
     .describe("Deslocamento para paginação"),
 });
 
-const companySnapshotResponseSchema = z.object({
-  id: z.string(),
-  cnpj: z.string(),
+const companyResponseSchema = z.object({
   razaoSocial: z.string(),
   nomeFantasia: z.string().nullable(),
   cnaePrincipal: z.string().nullable(),
@@ -32,7 +34,8 @@ const companySnapshotResponseSchema = z.object({
   porte: z.string().nullable(),
   situacao: z.string().nullable(),
   dataAbertura: z.string().nullable(),
-  fetchedAt: z.string().describe("Timestamp ISO 8601"),
+  endereco: enderecoResponseSchema,
+  socios: z.array(socioResponseSchema),
 });
 
 export const leadResponseSchema = z.object({
@@ -45,8 +48,7 @@ export const leadResponseSchema = z.object({
   segment: z.string(),
   employeeRange: z.string(),
   createdAt: z.string().describe("Timestamp ISO 8601"),
-  snapshotId: z.string().nullable(),
-  snapshot: companySnapshotResponseSchema.nullable(),
+  company: companyResponseSchema,
 });
 
 export const listLeadsResponseSchema = z.object({
@@ -59,7 +61,9 @@ export type ListLeadsResponse = z.infer<typeof listLeadsResponseSchema>;
 
 export { companyDataResponseSchema };
 
-interface PrismaLeadWithSnapshot {
+type SocioResponse = z.infer<typeof socioResponseSchema>;
+
+interface LeadRow {
   id: string;
   name: string;
   email: string;
@@ -69,23 +73,30 @@ interface PrismaLeadWithSnapshot {
   segment: string;
   employeeRange: string;
   createdAt: Date;
-  snapshotId: string | null;
-  snapshot: {
-    id: string;
-    cnpj: string;
-    razaoSocial: string;
-    nomeFantasia: string | null;
-    cnaePrincipal: string | null;
-    cnaeDescription: string | null;
-    capitalSocial: number | null;
-    porte: string | null;
-    situacao: string | null;
-    dataAbertura: Date | null;
-    fetchedAt: Date;
-  } | null;
+  razaoSocial: string;
+  nomeFantasia: string | null;
+  cnaePrincipal: string | null;
+  cnaeDescription: string | null;
+  capitalSocial: number | null;
+  porte: string | null;
+  situacao: string | null;
+  dataAbertura: Date | null;
+  logradouro: string | null;
+  numero: string | null;
+  complemento: string | null;
+  bairro: string | null;
+  municipio: string | null;
+  uf: string | null;
+  cep: string | null;
+  socios: unknown;
 }
 
-export const toLeadResponse = (lead: PrismaLeadWithSnapshot): LeadResponse => ({
+function toSocios(socios: unknown): SocioResponse[] {
+  const parsed = z.array(socioResponseSchema).safeParse(socios);
+  return parsed.success ? parsed.data : [];
+}
+
+export const toLeadResponse = (lead: LeadRow): LeadResponse => ({
   id: lead.id,
   name: lead.name,
   email: lead.email,
@@ -95,26 +106,30 @@ export const toLeadResponse = (lead: PrismaLeadWithSnapshot): LeadResponse => ({
   segment: lead.segment,
   employeeRange: lead.employeeRange,
   createdAt: lead.createdAt.toISOString(),
-  snapshotId: lead.snapshotId,
-  snapshot: lead.snapshot
-    ? {
-        id: lead.snapshot.id,
-        cnpj: lead.snapshot.cnpj,
-        razaoSocial: lead.snapshot.razaoSocial,
-        nomeFantasia: lead.snapshot.nomeFantasia,
-        cnaePrincipal: lead.snapshot.cnaePrincipal,
-        cnaeDescription: lead.snapshot.cnaeDescription,
-        capitalSocial: lead.snapshot.capitalSocial,
-        porte: lead.snapshot.porte,
-        situacao: lead.snapshot.situacao,
-        dataAbertura: lead.snapshot.dataAbertura?.toISOString() ?? null,
-        fetchedAt: lead.snapshot.fetchedAt.toISOString(),
-      }
-    : null,
+  company: {
+    razaoSocial: lead.razaoSocial,
+    nomeFantasia: lead.nomeFantasia,
+    cnaePrincipal: lead.cnaePrincipal,
+    cnaeDescription: lead.cnaeDescription,
+    capitalSocial: lead.capitalSocial,
+    porte: lead.porte,
+    situacao: lead.situacao,
+    dataAbertura: lead.dataAbertura?.toISOString() ?? null,
+    endereco: {
+      logradouro: lead.logradouro,
+      numero: lead.numero,
+      complemento: lead.complemento,
+      bairro: lead.bairro,
+      municipio: lead.municipio,
+      uf: lead.uf,
+      cep: lead.cep,
+    },
+    socios: toSocios(lead.socios),
+  },
 });
 
 export const toListLeadsResponse = (input: {
-  items: PrismaLeadWithSnapshot[];
+  items: LeadRow[];
   total: number;
 }): ListLeadsResponse => ({
   items: input.items.map(toLeadResponse),
